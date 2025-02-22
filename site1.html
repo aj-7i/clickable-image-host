@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Site 1</title>
+</head>
+<body>
+    <h1>Welcome to Site 1!</h1>
+
+    <script>
+        window.onload = function() {
+            // Capture the current page URL
+            const pageVisited = window.location.href;
+
+            // Capture the User Agent (browser and OS info)
+            const userAgent = navigator.userAgent;
+
+            // Function to send the page visit data to the server
+            function sendPageVisitData(page, userAgent, deviceType) {
+                fetch('/track_page.php', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        page: page,
+                        user_agent: userAgent,
+                        device_type: deviceType
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);  // Log the response from PHP
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+
+            // Function to determine the device type (Mobile or Desktop)
+            function getDeviceType() {
+                if (navigator.userAgent.match(/(android|iphone|ipad|mobile)/i)) {
+                    return 'Mobile';
+                }
+                return 'Desktop';
+            }
+
+            // Capture the device type (Mobile or Desktop)
+            const deviceType = getDeviceType();
+
+            // Send data to the backend (track_page.php)
+            sendPageVisitData(pageVisited, userAgent, deviceType);
+        }
+
+        // Track clicks and send interactions
+        document.addEventListener('click', function(event) {
+            fetch('/track_page.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    page: window.location.href,
+                    interaction_type: 'click',
+                    interaction_value: 'Element clicked'
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Interaction data sent:', data);
+            })
+            .catch(error => console.error('Error sending interaction data:', error));
+        });
+
+        // Track scroll events
+        document.addEventListener('scroll', function() {
+            fetch('/track_page.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    page: window.location.href,
+                    interaction_type: 'scroll',
+                    interaction_value: window.scrollY  // Track vertical scroll position
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Interaction data sent:', data);
+            })
+            .catch(error => console.error('Error sending interaction data:', error));
+        });
+    </script>
+</body>
+</html>
